@@ -1,0 +1,94 @@
+bl_info = {
+    "name": "Material Sorting",
+    "author": "Yotun (Fixed)",
+    "version": (0, 0, 2),
+    "blender": (2, 90, 0),
+    "location": "Material Properties > Material Specials",
+    "description": "Sort material slots alphabetically",
+    "category": "Material",
+}
+
+import bpy
+
+class OBJECT_OT_materials_a_to_z(bpy.types.Operator):
+    bl_idname = 'object.mat_sorting_a_to_z'
+    bl_label = 'Sort A to Z'
+    bl_description = "Sort materials by name (A to Z)"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        # Only enable if an object with material slots is active
+        return context.active_object is not None and hasattr(context.active_object, "material_slots")
+
+    def execute(self, context):
+        ob = context.active_object
+        n = len(ob.material_slots)
+        
+        for _ in range(n):
+            for i in range(n - 1):
+                mat_a = ob.material_slots[i].material
+                mat_b = ob.material_slots[i + 1].material
+                
+                # Handle empty slots safely (sort empty slots to the bottom)
+                name_a = mat_a.name.lower() if mat_a else "\xFF"
+                name_b = mat_b.name.lower() if mat_b else "\xFF"
+                
+                if name_b < name_a:
+                    ob.active_material_index = i + 1
+                    bpy.ops.object.material_slot_move(direction='UP')
+                    
+        return {"FINISHED"}
+
+
+class OBJECT_OT_materials_z_to_a(bpy.types.Operator):
+    bl_idname = 'object.mat_sorting_z_to_a'
+    bl_label = 'Sort Z to A'
+    bl_description = "Sort materials by name (Z to A)"
+    bl_options = {"REGISTER", "UNDO"}
+
+    @classmethod
+    def poll(cls, context):
+        return context.active_object is not None and hasattr(context.active_object, "material_slots")
+
+    def execute(self, context):
+        ob = context.active_object
+        n = len(ob.material_slots)
+        
+        for _ in range(n):
+            for i in range(n - 1):
+                mat_a = ob.material_slots[i].material
+                mat_b = ob.material_slots[i + 1].material
+                
+                name_a = mat_a.name.lower() if mat_a else ""
+                name_b = mat_b.name.lower() if mat_b else ""
+                
+                if name_b > name_a:
+                    ob.active_material_index = i + 1
+                    bpy.ops.object.material_slot_move(direction='UP')
+                    
+        return {"FINISHED"}
+
+
+def material_sorting_by_name(self, context):
+    layout = self.layout
+    layout.separator()
+    layout.operator(OBJECT_OT_materials_a_to_z.bl_idname, icon='TRIA_UP', text="Sort from A to Z")
+    layout.operator(OBJECT_OT_materials_z_to_a.bl_idname, icon='TRIA_DOWN', text="Sort from Z to A")
+    layout.separator()
+
+
+def register():
+    bpy.utils.register_class(OBJECT_OT_materials_a_to_z)
+    bpy.utils.register_class(OBJECT_OT_materials_z_to_a)
+    bpy.types.MATERIAL_MT_context_menu.prepend(material_sorting_by_name)
+
+
+def unregister():
+    bpy.utils.unregister_class(OBJECT_OT_materials_a_to_z)
+    bpy.utils.unregister_class(OBJECT_OT_materials_z_to_a)
+    bpy.types.MATERIAL_MT_context_menu.remove(material_sorting_by_name)
+
+
+if __name__ == "__main__":
+    register()
