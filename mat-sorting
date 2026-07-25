@@ -1,8 +1,8 @@
 bl_info = {
     "name": "Material Sorting",
-    "author": "Yotun (Fixed)",
-    "version": (0, 0, 2),
-    "blender": (2, 90, 0),
+    "author": "_Nikifor",
+    "version": (1, 0, 0),
+    "blender": (5, 1, 2),
     "location": "Material Properties > Material Specials",
     "description": "Sort material slots alphabetically",
     "category": "Material",
